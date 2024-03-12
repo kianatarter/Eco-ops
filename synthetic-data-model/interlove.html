@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eco Ops Dashboard</title>
+    <!-- Include external CSS here if needed -->
+</head>
+<body>
+<div id="app">
+  <h2>Worldbridger One</h2>
+  <img src="worldbridgerone00.gif" alt="Worldbridger One Logo">
+
+  <canvas id="ecoGoalsChart"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const { createApp } = Vue;
+
+createApp({
+  data() {
+    return {
+      ecoGoalsData: [],
+    };
+  },
+  mounted() {
+    this.fetchData();
+  },
+  methods: {
+    async fetchData() {
+      try {
+        const response = await axios.get('https://worldbridger.one/ot6.json');
+        this.ecoGoalsData = response.data;
+        this.createChart();
+      } catch (error) {
+        console.error('Fetching data failed:', error);
+      }
+    },
+    processData() {
+      // Process data to aggregate themes for the chart
+      const themes = this.ecoGoalsData.reduce((acc, {theme}) => {
+        acc[theme] = (acc[theme] || 0) + 1;
+        return acc;
+      }, {});
+      return {
+        labels: Object.keys(themes),
+        datasets: [{
+          label: 'Number of Goals',
+          data: Object.values(themes),
+          backgroundColor: [
+            // Define a palette of eco-friendly colors
+            '#0d3b66', '#d45d79', '#faf0ca', '#6e5773', '#ea9085',
+            // Add more colors as needed for your themes
+          ],
+        }]
+      };
+    },
+    createChart() {
+      // Create a pie chart visualizing eco goals
+      const chartData = this.processData();
+      const ctx = document.getElementById('ecoGoalsChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'pie',
+        data: chartData,
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              display: true,
+              position: 'bottom',
+            },
+            tooltip: {
+              enabled: true,
+              callbacks: {
+                label: function(context) {
+                  // Customize tooltip for better insights
+                  const label = context.label;
+                  const value = context.raw;
+                  return `${label}: ${value} activities`;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+  }
+}).mount('#app');
+</script>
+
