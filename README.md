@@ -13,9 +13,13 @@ Privacy Concerns
 This project emphasizes transparency through the use of reports and paper trails. 
 
 ```mermaid
-  graph TD;
-      A-->B;
-      A-->C;
-      B-->D;
-      C-->D;
+zenuml
+    try {
+      Consumer->API: Book something
+      API->BookingService: Start booking process
+    } catch {
+      API->Consumer: show failure
+    } finally {
+      API->BookingService: rollback status
+    }
 ```
