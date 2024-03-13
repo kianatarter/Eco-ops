@@ -13,13 +13,13 @@ Privacy Concerns
 This project emphasizes transparency through the use of reports and paper trails. 
 
 ```mermaid
-zenuml
-    try {
-      Consumer->API: Book something
-      API->BookingService: Start booking process
-    } catch {
-      API->Consumer: show failure
-    } finally {
-      API->BookingService: rollback status
-    }
+        zenuml
+            try {
+              Consumer->API: Book something
+              API->BookingService: Start booking process
+            } catch {
+              API->Consumer: show failure
+            } finally {
+              API->BookingService: rollback status
+            }
 ```
