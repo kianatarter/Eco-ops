@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stars on Sphere</title>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.147/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3@6.7.0/dist/d3.min.js"></script>
+</head>
+<body>
+    <script>
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Sphere geometry
+        const sphereRadius = 2; // Adjust as needed
+        const geometry = new THREE.SphereBufferGeometry(sphereRadius, 32, 32);
+
+        // Load your star data from 'stars.csv' using D3
+        d3.csv('stars.csv').then(data => {
+            // Process data:
+            // 1. Convert RA and Dec to radians
+            data.forEach(star => {
+                star.RA = star.RA_hour * 15 * (Math.PI / 180); // Hours to radians
+                star.Dec = (star.dec_deg + star.dec_min / 60 + star.dec_sec / 3600) * (Math.PI / 180);
+            });
+
+            // 2. Convert RA/Dec to Cartesian coordinates with star at distance sphereRadius
+            data.forEach(star => {
+                star.x = sphereRadius * Math.cos(star.RA) * Math.cos(star.Dec);
+                star.y = sphereRadius * Math.sin(star.RA) * Math.cos(star.Dec);
+                star.z = sphereRadius * Math.sin(star.Dec);
+            });
+
+            // Material for the sphere (make it transparent to see the points inside)
+            const material = new THREE.MeshBasicMaterial({ 
+                color: 0x0000ff, 
+                wireframe: true, 
+                transparent: true, 
+                opacity: 0.5 
+            });  
+            const sphereMesh = new THREE.Mesh(geometry, material);
+            scene.add(sphereMesh);
+
+            // Function to create a point geometry
+            function createPointGeometry(radius, color) {
+                const geo = new THREE.SphereBufferGeometry(radius, 8, 8);
+                const pointMaterial = new THREE.MeshBasicMaterial({ color });
+                return new THREE.Mesh(geo, pointMaterial);
+            }
+
+            // Add star data points as meshes to the scene
+            data.forEach(star => {
+                const point = createPointGeometry(star.magnitude * 0.02, 0xffffff); // Adjust radius as needed
+                point.position.set(star.x, star.y, star.z);
+                scene.add(point);
+            });
+
+            camera.position.z = 5; 
+        });
+
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+
+        animate();
+    </script>
+</body>
+</html>
+

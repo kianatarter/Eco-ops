@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stars on Sphere</title>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.147/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3@6.7.0/dist/d3.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.147/examples/js/controls/OrbitControls.js"></script>
+    <script type="module">
+        import { StarMap } from './StarMap.js';
+        window.addEventListener('DOMContentLoaded', (event) => {
+            const starMap = new StarMap();
+            starMap.loadStarData('path/to/your/stars.csv');
+            // Start the animation loop after the data is loaded and stars are added.
+        });
+    </script>
+</head>
+<body>
+    <div id="loading">Loading...</div> 
+</body>
+</html>
+

@@ -1,0 +1,72 @@
+
+
+
+
+<script>
+// Assuming Three.js and D3 (for CSV loading) are included in your HTML file
+
+document.addEventListener('DOMContentLoaded', async () => {
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(0, 0, 0); // Center the camera within the sphere
+
+    const renderer = new THREE.WebGLRenderer({ alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    new THREE.OrbitControls(camera, renderer.domElement); // Allow user to orbit around the center
+
+    const starGeometry = new THREE.BufferGeometry();
+    const starMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.1 });
+
+    // Load and process star data
+    const starData = await loadStarData('stars.csv');
+    const positions = processStarData(starData);
+    starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+
+    const stars = new THREE.Points(starGeometry, starMaterial);
+    scene.add(stars);
+
+    animate();
+
+    function animate() {
+        requestAnimationFrame(animate);
+        renderer.render(scene, camera);
+    }
+});
+
+async function loadStarData(filePath) {
+    const response = await fetch(filePath);
+    const text = await response.text();
+    return d3.csvParse(text, d3.autoType); // Adjust based on how D3 is included
+}
+
+function processStarData(data) {
+    const positions = [];
+    data.forEach(record => {
+        const raRadians = convertHMStoRadians(record.RA_hour, record.RA_min, record.RA_sec);
+        const decRadians = convertDMSToRadians(record.dec_deg, record.dec_min, record.dec_sec);
+        const { x, y, z } = sphericalToCartesian(raRadians, decRadians, 100); // Use a large radius to avoid clipping
+        positions.push(x, y, z);
+    });
+    return positions;
+}
+
+function sphericalToCartesian(ra, dec, radius) {
+    const x = radius * Math.cos(dec) * Math.cos(ra);
+    const y = radius * Math.cos(dec) * Math.sin(ra);
+    const z = radius * Math.sin(dec);
+    return { x, y, z };
+}
+
+function convertDMSToRadians(degrees, minutes, seconds) {
+    return (degrees + minutes / 60 + seconds / 3600) * (Math.PI / 180);
+}
+
+function convertHMStoRadians(hours, minutes, seconds) {
+    return (hours * 15 + minutes / 4 + seconds / 240) * (Math.PI / 180);
+}
+</script>
+
+</html>
+
